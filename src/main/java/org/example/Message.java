@@ -90,7 +90,7 @@ public class Message {
         } else if (awaitingGameNumberForRemoval) {
             response = handleRemoveGame(textMsg, chatId);
         } else if (puzzleMode) {
-            response = handlePuzzleMode(textMsg, chatId);
+            response = handleQuestionMode(textMsg, chatId);
         } else {
             response = handleDefaultMode(textMsg, chatId);
             awaitngStart = true;
@@ -107,16 +107,10 @@ public class Message {
      * @param chatId  Идентификатор чата пользователя.
      * @return Ответ на запрос пользователя в режиме головоломки.
      */
-    private String handlePuzzleMode(String textMsg, long chatId) {
+    private String handleQuestionMode(String textMsg, long chatId) {
         String response;
         if ((textMsg.equalsIgnoreCase("дай подсказку"))||(textMsg.equals("/gethint"))) {
             response = questionGame.getHint();
-        } else if ((textMsg.equalsIgnoreCase("следующая загадка"))||(textMsg.equals("/anotheriddle"))) {
-            response = questionGame.getNextPuzzle(chatId);
-        } else if (textMsg.equals("/restart")) {
-            response = questionGame.restart(chatId);
-        } else if ((textMsg.equalsIgnoreCase("какой ответ"))||(textMsg.equals("/getanswer"))) {
-            response = questionGame.getAnswerAndNextPuzzle(chatId);
         } else if (textMsg.equals("/stoppuzzle")) {
             response = "Режим головоломки завершен.\n" + questionGame.getStatistics(chatId);
 
@@ -243,8 +237,9 @@ public class Message {
             response = "Введите год выхода игры.";
             awaitingYear = true;
             // Проверка формата
-        }else if (!textMsg.matches("\\d{4}") || textMsg.matches(".*[a-zA-Z].*")) {
+        }else if (!textMsg.matches("\\d{4}") || textMsg.matches("")) {
             response = "Некорректный формат года. Пожалуйста, введите четыре цифры без букв.";
+            return response;
         }
         int year = Integer.parseInt(textMsg.trim());
         if (storage.gameExists(title, author, year, chatId)) {
@@ -281,7 +276,7 @@ public class Message {
                 // Обновьте базу данных с рейтингом
                 storage.addPlayedGame(lastAddedGameTitle, lastAddedGameAuthor, lastAddedGameYear, rating, lastAddedGameChatId);
                 awaitingRating = false;
-                response = "Отзыв " + rating + "⭐ оставлен.";
+                response = "Отзыв " + rating;
             } else {
                 response = "Пожалуйста, введите оценку от 1 до 5.";
             }

@@ -113,7 +113,6 @@ public class QuestionGame {
         puzzles.put("Что можно сломать, даже если ни разу не касался?", new Game("Что можно сломать, даже если ни разу не касался?", "Обещание", "Это слово, которое вы должны держать"));
         puzzles.put("Быстрый как стрела, он летит без перьев", new Game("Быстрый как стрела, он летит без перьев", "Свет", "Это движется со скоростью 299 792 458 метров в секунду"));
 
-
         userAttempts = new HashMap<>();
         correctAnswers = new HashMap<>();
         currentGame = null;
@@ -122,7 +121,7 @@ public class QuestionGame {
 
 
     /**
-     * Метод начинает новую головоломку для указанного чата.
+     * Метод начинает новый вопрос для указанного чата.
      *
      * @param chatId Идентификатор чата, в котором начинается головоломка.
      * @return Сообщение с вопросом текущей головоломки.
@@ -136,7 +135,7 @@ public class QuestionGame {
         userAttempts.put(chatId, 0);
         String randomPuzzleKey = getRandomPuzzle();
         currentGame = puzzles.get(randomPuzzleKey);
-        return "Добро пожаловать в игру в загадки! Начнем.\nЗагадка: " + currentGame.getQuestion();
+        return "Добро пожаловать в игру в вопрос- ответ! Начнем.\nЗагадка: " + currentGame.getQuestion();
     }
 
 
