@@ -75,10 +75,6 @@ public class Message {
             response = handleEditTitle(textMsg, chatId);
         } else if (awaitingGameNumberForEdit){
             response = handleEditNumber(textMsg, chatId);
-        }else if (awaitingYearForGamesByYear){
-            response = handleYearForGamesByYear(textMsg, chatId);
-        }else if (awaitingAuthorForGamesByAuthor) {
-            response = handleAuthorForGamesByAuthor(textMsg, chatId);
         }else if (awaitingTitle) {
             response = handleAddTitle(textMsg, chatId);
         } else if (awaitingAuthor) {
@@ -288,67 +284,6 @@ public class Message {
     }
 
 
-    public String handleAuthorForGamesByAuthor(String textMsg, long chatId) {
-        String response;
-        CancelButton(textMsg, chatId);
-
-        // Проверяем, что ожидается ввод имени автора
-        if (awaitingAuthorForGamesByAuthor) {
-            // Проверяем, что введенное имя автора не содержит цифр, двух пробелов и символа перевода строки
-            if (!textMsg.contains("  ") && !textMsg.contains("\n")) {
-                String author = textMsg.trim();
-                List<String> gamesByAuthor = storage.getGamesByAuthor(author, chatId);
-                if (!gamesByAuthor.isEmpty()) {
-                    response = "Игры издателя '" + author + "':\n" + String.join("\n", gamesByAuthor);
-                } else {
-                    response = "Нет пройденных игр этого издателя.";
-                }
-            } else {
-                response = "Некорректный формат. Пожалуйста, введите корректно издателя игры.";
-            }
-
-            // Сбрасываем флаг ожидания имени автора
-            awaitingAuthorForGamesByAuthor = false;
-        } else {
-            response = "Неверное состояние для ввода издателя.";
-        }
-
-        return response;
-    }
-
-
-    public String handleYearForGamesByYear(String textMsg, long chatId) {
-        String response;
-        CancelButton(textMsg, chatId);
-
-        // Проверяем, что ожидается ввод года
-        if (awaitingYearForGamesByYear) {
-            try {
-                int year = Integer.parseInt(textMsg.trim());
-
-                // Проверяем, что введенный год не содержит букв и не более 4 цифр
-                if (textMsg.matches("\\d{1,4}")) {
-                    List<String> gamesByYear = storage.getGamesByYear(year, chatId);
-                    awaitingYearForGamesByYear = false;
-                    if (!gamesByYear.isEmpty()) {
-                        response = "Игры " + year + " года:\n" + String.join("\n", gamesByYear);
-                    } else {
-                        response = "Нет пройденных игр этого года.";
-                    }
-                } else {
-                    response = "Некорректный формат года. Пожалуйста, введите год в виде числа не более 4 цифр.";
-                }
-            } catch (NumberFormatException e) {
-                response = "Некорректный формат года. Пожалуйста, введите год в виде числа не более 4 цифр.";
-            }
-        } else {
-            response = "Неверное состояние для ввода года.";
-        }
-
-        return response;
-    }
-
-
     // Метод обработки сообщения для удаления игры
     public String handleRemoveGame(String textMsg, long chatId) {
         String response;
@@ -530,22 +465,9 @@ public class Message {
                     Привет, я умею:
                     /addgame - Добавить игру, которую ты уже прошел
                     /getplayed - Список пройденных игр
-                    /getbyrating - Рейтинг игр всех пользователей
-                    /getbyauthor - Получить список игр по конкретному автору
-                    /getbyyear - Получить список игр по конкретному году
-                    /removegame - Удалить игру из списка
-                    /editgame - Изменяет выбранную игру из списка на написанную
                     /playpuzzle - Быстрый квиз по разным темам для развлечения
                     """
             ;
-        }else if (textMsg.equals("/get") || textMsg.equals("Просвети")) {
-            response = storage.getRandQuote();
-
-        } else if (textMsg.startsWith("/editgame")) {
-            String numberRequest = "Введите номер из списка:";
-            response = numberRequest;
-            awaitingGameNumberForEdit = true; // Флаг ожидания имени автора для команды /getbyauthor
-            awaitingcancel = true;
 
 
         }else if (textMsg.startsWith("/addgame") || textMsg.equals("Добавить_игру")){

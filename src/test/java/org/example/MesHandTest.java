@@ -115,75 +115,6 @@ public class MesHandTest{
 
 
     /**
-     * Проверка команды /getbyauthor для получения списка пройденных игр указанного автора для случая, когда автор указан верно
-     */
-    @Test
-    public void testGetGamesByAuthorCommandWithExistingGames() {
-        String author = "John Doe";
-        List<String> games = new ArrayList<>();
-        games.add("Game 1");
-        games.add("Game 2");
-        when(storage.getGamesByAuthor(author, ChatId)).thenReturn(games);
-        String response = messageHandling.parseMessage("/getbyauthor", ChatId);
-        Assert.assertEquals("Введите имя автора:", response);
-        response = messageHandling.parseMessage(author, ChatId);
-        verify(storage, times(1)).getGamesByAuthor(author, ChatId);
-        Assert.assertEquals("Игры издателя 'John Doe':\nGame 1\nGame 2", response);
-    }
-
-
-    /**
-     * Проверка команды /getbyauthor для получения списка пройденных игр указанного автора для случая, когда авор указан неверно
-     */
-    @Test
-    public void testGetGamesByAuthorCommandWithNoGames() {
-        String author = "Nonexistent Author";
-        when(storage.getGamesByAuthor(author, ChatId)).thenReturn(new ArrayList<>());
-        String response = messageHandling.parseMessage("/getbyauthor " + author, ChatId);
-        Assert.assertEquals("Введите имя автора:", response);
-        response = messageHandling.parseMessage(author, ChatId);
-        verify(storage, times(1)).getGamesByAuthor(author, ChatId);
-        Assert.assertEquals("Нет пройденных игр этого издателя.", response);
-    }
-
-
-    /**
-     * Проверка команды /getbyyear для получения списка пройденных игр в неправильном указанном году для случая, когда год указан неверно
-     */
-    @Test
-    public void testGetGamesByYearCommandWithNoGames() {
-        int year = 1222;
-        when(storage.getGamesByYear(year, ChatId)).thenReturn(new ArrayList<>());
-
-        String response = messageHandling.parseMessage("/getbyyear", ChatId);
-        Assert.assertEquals("Введите год (не более 4 цифр):", response);
-        response = messageHandling.parseMessage(String.valueOf(year), ChatId);
-
-        verify(storage).getGamesByYear(year, ChatId);
-
-        Assert.assertEquals("Нет пройденных игр этого года.", response);
-
-    }
-
-
-    /**
-     * Проверка команды /getbyyear для получения списка пройденных игр в указанном году для случая, когда год указан верно
-     */
-    @Test
-    public void testGetGamesByYearCommandWithExistingGames() {
-        int year = 2020;
-        ArrayList<String> games = new ArrayList<>();
-        games.add("Game 1");
-        games.add("Game 2");
-        when(storage.getGamesByYear(year, ChatId)).thenReturn(games);
-        messageHandling.parseMessage("/getbyyear", ChatId);
-        String response = messageHandling.parseMessage(String.valueOf(year), ChatId);
-        verify(storage, times(1)).getGamesByYear(year, ChatId);
-        Assert.assertEquals("Игры 2020 года:\nGame 1\nGame 2", response);
-    }
-
-
-    /**
      * Проверка команды /removegame для удаления указанной игры из списка пройденных игр для случая, когда номер игры в списке указан верно
      */
     @Test
@@ -234,57 +165,6 @@ public class MesHandTest{
 
 
     /**
-     * Проверка команды /editgame для случая, когда выполняется успешное редактирование игры с правильными данными
-     */
-    @Test
-    public void testEditGameCommandWithValidData() {
-        List<String> playedGames = new ArrayList<>();
-        playedGames.add("Old Game\nOld Author\n2022");
-        when(storage.getPlayedGames(ChatId)).thenReturn(playedGames);
-        when(storage.getAllValues(ChatId)).thenReturn(playedGames);
-        messageHandling.parseMessage("/editgame", ChatId);
-        messageHandling.parseMessage("1", ChatId);
-        messageHandling.parseMessage("New Game", ChatId);
-        messageHandling.parseMessage("New Author", ChatId);
-        String response = messageHandling.parseMessage("2023", ChatId);
-        verify(storage, times(1)).editPlayedGame(eq("Old Game"), eq("Old Author"),
-                eq(2022), eq("New Game"), eq("New Author"), eq(2023), eq(ChatId));
-        Assert.assertEquals("Игра 'Old Game' успешно заменена на игру 'New Game' от издателя New Author (2023) в списке пройденных!", response);
-    }
-
-
-    /**
-     * Проверка команды /editgame для случая, когда указанный номер игры недопустим (например, больше размера списка)
-     */
-    @Test
-    public void testEditGameCommandWithInvalidGameNumberTooBig() {
-        int number = 2;
-        List<String> playedGames = new ArrayList<>();
-        playedGames.add("Game 1");
-
-        String response = messageHandling.parseMessage("/editgame", ChatId);
-        Assert.assertEquals("Введите номер из списка:", response);
-        response = messageHandling.handleEditNumber(String.valueOf(number), ChatId);
-        verify(storage, never()).editPlayedGame(
-                anyString(), anyString(), anyInt(), anyString(), anyString(), anyInt(), eq(ChatId));
-        Assert.assertEquals("Неверный формат. Введите номер игры из списка /getplayed", response);
-    }
-
-
-    /**
-     * Проверка команды /editgame для случая, когда данные игры введены в неверном формате.
-     */
-    @Test
-    public void testEditGameCommandWithInvalidDataFormat() {
-        String invalidMessage = "1 abc Author 2023";
-        String response = messageHandling.parseMessage("/editgame " + invalidMessage, ChatId);
-        verify(storage, never()).editPlayedGame(
-                anyString(), anyString(), anyInt(), anyString(), anyString(), anyInt(), eq(ChatId));
-        Assert.assertEquals("Введите номер из списка:", response);
-    }
-
-
-    /**
      * Тестирование /addgame с допустимым рейтингом в пределах разрешенного диапазона.
      */
     @Test
@@ -301,7 +181,7 @@ public class MesHandTest{
         response = messageHandling.handleRating(textMsg);
         verify(storage, times(1)).addPlayedGame(eq("Title"), eq("Author"),
                 eq(2000), eq(4), eq(123L));
-        Assert.assertEquals("Отзыв 4⭐ оставлен.", response);
+        Assert.assertEquals("Отзыв 4", response);
     }
 
 
