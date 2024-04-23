@@ -32,48 +32,6 @@ interface GameStorage {
      * @param chatId уникальный идентификатор чата пользователя
      */
     void clearPlayedGames(long chatId);
-
-    /**
-     * Получает список пройденных игр определенного автора для указанного чата.
-     *
-     * @param author автор игры
-     * @param chatId уникальный идентификатор чата пользователя
-     * @return список пройденных игр указанного автора в формате строки
-     */
-    List<String> getGamesByAuthor(String author, long chatId);
-
-    /**
-     * Получает список пройденных игр за определенный год для указанного чата.
-     *
-     * @param year   год прочтения
-     * @param chatId уникальный идентификатор чата пользователя
-     * @return список пройденных игр за указанный год в формате строки
-     */
-    List<String> getGamesByYear(int year, long chatId);
-
-    /**
-     * Получает пронумерованный список всех игр с средним рейтингом.
-     *
-     * @param chatId уникальный идентификатор чата пользователя
-     * @return пронумерованный список игр с средним рейтингом
-     */
-    List<String> getGamesByAverageRating(long chatId);
-
-
-    /**
-     * Изменяет существующую книгу новой книгой в списке пройденных игр.
-     *
-     * @param oldTitle  старое название игры
-     * @param oldAuthor старый автор игры
-     * @param oldYear   старый год прочтения
-     * @param newTitle  новое название игры
-     * @param newAuthor новый автор игры
-     * @param newYear   новый год прочтения
-     * @param chatId    уникальный идентификатор чата пользователя
-     */
-    void editPlayedGame(String oldTitle, String oldAuthor, int oldYear,
-                        String newTitle, String newAuthor, int newYear, long chatId);
-
     /**
      * Проверяет существование указанной игры в списке пройденных игр.
      *
@@ -86,44 +44,12 @@ interface GameStorage {
     boolean gameExists(String title, String author, int year, long chatId);
 }
 
-/**
- * Интерфейс для работы с цитатами.
- * Позволяет получать случайные цитаты.
- */
-interface QuoteStorage {
-    /**
-     * Получает случайную цитату.
-     *
-     * @return случайная цитата в формате строки
-     */
-    String getRandQuote();
-}
+
 
 // Реализация интерфейсов в классе Storage
-class Storage implements GameStorage, QuoteStorage {
-    final private List<String> quoteList;
+class Storage implements GameStorage {
 
-    /**
-     * Хранилище для цитат
-     */
-    public Storage()
-    {
-        quoteList = new ArrayList<>();
-        quoteList.add("Цитата: Начинать всегда стоит с того, что сеет сомнения. \n\nБорис Стругацкий.");
-        quoteList.add("Цитата: 80% успеха - это появиться в нужном месте в нужное время.\n\nВуди Аллен");
-        quoteList.add("Цитата: Мы должны признать очевидное: понимают лишь те,кто хочет понять.\n\nБернар Вербер");
-    }
 
-    /**
-     * Метод для получения произвольной цитаты из quoteList
-     */
-    public String getRandQuote()
-    {
-        //получаем случайное значение в интервале от 0 до самого большого индекса
-        int randValue = (int)(Math.random() * quoteList.size());
-        //Из коллекции получаем цитату со случайным индексом и возвращаем ее
-        return quoteList.get(randValue);
-    }
 
     /**
      * Метод для получения списка пройденных игр
@@ -264,79 +190,6 @@ class Storage implements GameStorage, QuoteStorage {
             }
         }
     }
-
-    /**
-     * Метод для получения игр одного автора из списка пройденных игр
-     */
-    public List<String> getGamesByAuthor(String author, long chatId) {
-        List<String> games = new ArrayList<>();
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            Class.forName("org.sqlite.JDBC");
-            connection = DriverManager.getConnection("jdbc:sqlite:completed_games.db");
-            String sql = "SELECT title FROM completed_games WHERE author = ? AND chat_id = ?";
-            statement = connection.prepareStatement(sql);
-            statement.setString(1, author);
-            statement.setLong(2, chatId);
-            resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                games.add(resultSet.getString("title"));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (resultSet != null) resultSet.close();
-                if (statement != null) statement.close();
-                if (connection != null) connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return games;
-    }
-
-    /**
-     * Метод для получения игр по конкретному году из списка пройденных игр
-     */
-    public List<String> getGamesByYear(int year, long chatId) {
-        List<String> games = new ArrayList<>();
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            Class.forName("org.sqlite.JDBC");
-            connection = DriverManager.getConnection("jdbc:sqlite:completed_games.db");
-            String sql = "SELECT title FROM completed_games WHERE year = ? AND chat_id = ?";
-            statement = connection.prepareStatement(sql);
-            statement.setInt(1, year);
-            statement.setLong(2, chatId);
-            resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                games.add(resultSet.getString("title"));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (resultSet != null) resultSet.close();
-                if (statement != null) statement.close();
-                if (connection != null) connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        return games;
-    }
-
-
     /**
      * Возвращает список игр с сортировкой по среднему рейтингу (от наибольшего значения)
      * для заданного id беседы.
@@ -527,5 +380,4 @@ class Storage implements GameStorage, QuoteStorage {
         }
         return allValues;
     }
-
 }
